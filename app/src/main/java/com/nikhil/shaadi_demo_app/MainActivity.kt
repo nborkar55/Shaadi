@@ -3,6 +3,7 @@ package com.nikhil.shaadi_demo_app
 import android.content.Context
 import android.net.ConnectivityManager
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
@@ -21,7 +22,7 @@ import kotlinx.coroutines.withContext
 class MainActivity : AppCompatActivity() {
     private lateinit var mainViewModel: MainViewModel
     lateinit var carousalAdapter: CarouselAdapter
-    val resultList = ArrayList<Profiles.Result>()
+    private val resultList = ArrayList<Profiles.Result>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -35,6 +36,8 @@ class MainActivity : AppCompatActivity() {
 
         refresh.setOnClickListener {
             if(isNetworkAvailable()) {
+                tvInternet.visibility= View.GONE
+                recyclerview.visibility=View.VISIBLE
                 CoroutineScope(Dispatchers.IO).launch {
                     mainViewModel.getProfile()
                 }
@@ -50,6 +53,8 @@ class MainActivity : AppCompatActivity() {
         recyclerview.adapter = carousalAdapter
         CoroutineScope(Dispatchers.IO).launch {
             if (isNetworkAvailable()) {
+                tvInternet.visibility= View.GONE
+                recyclerview.visibility=View.VISIBLE
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@MainActivity, "Making Network call", Toast.LENGTH_LONG)
                         .show()
@@ -71,6 +76,10 @@ class MainActivity : AppCompatActivity() {
             withContext(Dispatchers.Main) {
 
                 mainViewModel.getProfilesFromDB().observe(this@MainActivity, { results ->
+                    if(!results.isEmpty()) {
+                        tvInternet.visibility = View.GONE
+                        recyclerview.visibility = View.VISIBLE
+                    }
                     resultList.clear()
                     resultList.addAll(results)
                     carousalAdapter.notifyDataSetChanged()
